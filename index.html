@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Office Blog Hub</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f6f9;
+      color: #333;
+    }
+
+    header {
+      background: #0078d7;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2em;
+    }
+
+    nav {
+      background: #005a9e;
+      padding: 10px;
+      text-align: center;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin: 0 15px;
+      font-weight: bold;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .blog-card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      transition: transform 0.2s;
+    }
+
+    .blog-card:hover {
+      transform: scale(1.02);
+    }
+
+    .blog-card h2 {
+      color: #0078d7;
+      margin-top: 0;
+    }
+
+    .blog-card p {
+      font-size: 0.95em;
+      line-height: 1.6em;
+    }
+
+    .btn-vb {
+      display: block;
+      width: fit-content;
+      margin: 30px auto;
+      padding: 12px 25px;
+      background: #28a745;
+      color: white;
+      font-size: 1em;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+
+    .btn-vb:hover {
+      background: #218838;
+    }
+
+    footer {
+      background: #0078d7;
+      color: white;
+      text-align: center;
+      padding: 15px;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Office Blog Hub</h1>
+    <p>Learn Word, Excel & PowerPoint with Ease</p>
+  </header>
+
+  <nav>
+    <a href="#word">Word</a>
+    <a href="#excel">Excel</a>
+    <a href="#ppt">PowerPoint</a>
+  </nav>
+
+  <div class="container">
+    <div class="blog-card" id="word">
+      <h2>Microsoft Word Tips</h2>
+      <p>Discover how to format documents, use styles, add references, and automate repetitive tasks in Word.</p>
+    </div>
+
+    <div class="blog-card" id="excel">
+      <h2>Microsoft Excel Tricks</h2>
+      <p>Learn formulas, pivot tables, charts, and automation using VBA in Excel to boost your productivity.</p>
+    </div>
+
+    <div class="blog-card" id="ppt">
+      <h2>PowerPoint Hacks</h2>
+      <p>Enhance your presentations with smart design, animations, and templates that impress your audience.</p>
+    </div>
+  </div>
+
+  <a href="vbcodenotes.html" class="btn-vb">Go to VB Code</a>
+
+  <footer>
+    <p>&copy; 2025 Office Blog Hub. All rights reserved.</p>
+  </footer>
+</body>
+
+</html>
