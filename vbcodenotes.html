@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>VB Code Directory — Dashboard</title>
+
+  <style>
+    /* Theme variables */
+    :root{
+      --bg: #0f1724;
+      --panel: #0b1220;
+      --card: #0f1724;
+      --muted: #9aa4b2;
+      --text: #e6eef6;
+      --accent-excel: linear-gradient(135deg,#43a047,#66bb6a);
+      --accent-word: linear-gradient(135deg,#1e88e5,#42a5f5);
+      --accent-ppt: linear-gradient(135deg,#ef6c00,#ff9800);
+      --copy-grad: linear-gradient(135deg,#ff7043,#ff5722);
+      --glass: rgba(255,255,255,0.03);
+      --card-shadow: 0 6px 18px rgba(2,6,23,0.6);
+      --radius: 12px;
+      --code-bg: #0b1220;
+    }
+
+    .light {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --card: #ffffff;
+      --muted: #6b7280;
+      --text: #0f1724;
+      --glass: rgba(15,23,36,0.03);
+      --card-shadow: 0 6px 18px rgba(15,23,36,0.06);
+      --code-bg: #0f1724;
+    }
+
+    /* Basic layout */
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased}
+    .app {
+      display:grid;
+      grid-template-columns:260px 1fr;
+      gap:20px;
+      padding:18px;
+      min-height:100vh;
+    }
+
+    /* Sidebar */
+    .sidebar{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+      border-radius:var(--radius);
+      padding:18px;
+      box-shadow:var(--card-shadow);
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      position:relative;
+      color:var(--muted);
+    }
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      margin-bottom:6px;
+    }
+    .logo {
+      width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#6b7cff,#3ac7ff);display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:18px;box-shadow:0 6px 18px rgba(58,199,255,0.15)
+    }
+    .brand h2{margin:0;font-size:16px;color:var(--text)}
+    .brand p{margin:0;font-size:12px;color:var(--muted)}
+
+    .nav{
+      display:flex;flex-direction:column;gap:8px;margin-top:6px;
+    }
+    .nav button{
+      display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;border:0;background:transparent;color:var(--muted);cursor:pointer;font-weight:600;
+      transition:all .18s;
+    }
+    .nav button:hover{background:var(--glass);color:var(--text)}
+    .nav button.active{color:var(--text);background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:inset 0 0 0 2px rgba(255,255,255,0.02)}
+
+    .nav .dot{width:12px;height:12px;border-radius:4px}
+    .dot.ex{background:linear-gradient(135deg,#43a047,#66bb6a)}
+    .dot.wd{background:linear-gradient(135deg,#1e88e5,#42a5f5)}
+    .dot.pp{background:linear-gradient(135deg,#ef6c00,#ff9800)}
+
+    .sidebar .controls{margin-top:auto;display:flex;gap:8px;align-items:center;justify-content:space-between}
+    .toggle {
+      display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:var(--glass);cursor:pointer;border:0;color:var(--muted)
+    }
+    .search-mini{width:100%;margin-top:10px}
+    .search-mini input{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text);outline:none;font-size:13px}
+
+    /* Main area */
+    .main {
+      display:flex;flex-direction:column;gap:12px;
+    }
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .searchbar{
+      flex:1;display:flex;align-items:center;gap:12px;background:var(--panel);padding:12px;border-radius:12px;box-shadow:var(--card-shadow)
+    }
+    .searchbar input{flex:1;border:0;background:transparent;outline:none;color:var(--text);font-size:15px}
+    .controls-right{display:flex;gap:8px;align-items:center}
+
+    .view-stats{display:flex;gap:12px;align-items:center;color:var(--muted)}
+    .pill{padding:8px 12px;border-radius:999px;background:var(--glass);font-weight:600;color:var(--muted);font-size:13px}
+
+    /* Grid of cards */
+    .cards {
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap:16px;
+      margin-top:6px;
+    }
+
+    .card{
+      background:var(--card);
+      border-radius:12px;padding:12px;
+      box-shadow:var(--card-shadow);
+      border:1px solid rgba(255,255,255,0.02);
+      display:flex;flex-direction:column;gap:10px;position:relative;
+      transition:transform .18s,box-shadow .18s;
+    }
+    .card:hover{transform:translateY(-6px);box-shadow:0 22px 40px rgba(2,6,23,0.6)}
+
+    .card .meta{display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .card h3{margin:0;font-size:16px;color:var(--text)}
+    .desc{font-size:13px;color:var(--muted);margin:0}
+
+    .tag{
+      padding:6px 10px;border-radius:999px;font-weight:700;font-size:12px;color:white;background:rgba(0,0,0,0.2)
+    }
+    .tag.ex{background:linear-gradient(135deg,#43a047,#66bb6a)}
+    .tag.wd{background:linear-gradient(135deg,#1e88e5,#42a5f5)}
+    .tag.pp{background:linear-gradient(135deg,#ef6c00,#ff9800)}
+
+    .code-wrap{background:var(--code-bg);border-radius:10px;padding:12px;overflow:auto;color:var(--text);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;line-height:1.45;border:1px solid rgba(255,255,255,0.03)}
+    pre{margin:0;white-space:pre;word-break:normal}
+
+    .copy {
+      position:absolute;right:12px;top:12px;padding:8px 10px;border-radius:8px;border:0;background:var(--copy-grad);color:#fff;font-weight:700;cursor:pointer;transition:transform .12s,box-shadow .12s;
+      box-shadow:0 8px 20px rgba(255,87,34,0.12)
+    }
+    .copy.copied{background:#43a047;box-shadow:0 8px 20px rgba(67,160,71,0.15)}
+    .copy:active{transform:scale(.98)}
+
+    /* small helpers */
+    .muted{color:var(--muted);font-size:13px}
+    .flex{display:flex;gap:8px;align-items:center}
+    .hidden{display:none}
+
+    /* responsive */
+    @media (max-width:900px){
+      .app{grid-template-columns:1fr; padding:12px}
+      .sidebar{order:2;flex-direction:row;overflow:auto;padding:10px;border-radius:10px}
+      .main{order:1}
+      .cards{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="app" id="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="logo">VB</div>
+        <div>
+          <h2>VB Code Directory</h2>
+          <p>20 useful VBA snippets</p>
+        </div>
+      </div>
+
+      <div class="nav" role="navigation" aria-label="Categories">
+        <button class="nav-btn active" data-filter="all"><span class="dot ex"></span> All</button>
+        <button class="nav-btn" data-filter="excel"><span class="dot ex"></span> Excel</button>
+        <button class="nav-btn" data-filter="word"><span class="dot wd"></span> Word</button>
+        <button class="nav-btn" data-filter="ppt"><span class="dot pp"></span> PowerPoint</button>
+      </div>
+
+      <div class="search-mini">
+        <input id="sidebarSearch" placeholder="Quick search..." />
+      </div>
+
+      <div class="controls">
+        <div class="muted">Theme</div>
+        <button class="toggle" id="themeToggle" title="Toggle Dark/Light">🌗 Toggle</button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <div class="topbar">
+        <div class="searchbar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="opacity:.6"><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></circle></svg>
+          <input id="globalSearch" placeholder="Search snippets by title, description or code..." />
+          <div class="pill muted" id="resultCount">20 snippets</div>
+        </div>
+
+        <div class="controls-right">
+          <div class="view-stats muted">Showing <span id="showing">20</span> of 20</div>
+        </div>
+      </div>
+
+      <!-- CARDS GRID -->
+      <section class="cards" id="cards">
+
+        <!-- ===== EXCEL (10) ===== -->
+        <article class="card" data-cat="excel" data-title="AutoFit Columns" data-desc="Resize all columns to fit content">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta">
+            <h3>AutoFit Columns</h3>
+            <div class="tag ex">Excel</div>
+          </div>
+          <p class="desc">Automatically adjust column widths to fit contents in the worksheet.</p>
+          <div class="code-wrap"><pre>Sub AutoFitColumns()
+    Cells.EntireColumn.AutoFit
+End Sub</pre></div>
+        </article>
+
+        <article class="card" data-cat="excel" data-title="Delete Empty Rows" data-desc="Delete rows where columns A and B are empty">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta"><h3>Delete Empty Rows</h3><div class="tag ex">Excel</div></div>
+          <p class="desc">Deletes rows where both column A and B are empty (safe reverse loop).</p>
+          <div class="code-wrap"><pre>Sub DeleteEmptyRows()
+    Dim ws As Worksheet, i As Long
+    Set ws = ActiveSheet
+    For i = ws.Rows.Count To 1 Step -1
+        If Trim(ws.Cells(i, 1).Value) = "" And Trim(ws.Cells(i, 2).Value) = "" Then
+            ws.Rows(i).Delete
+        End If
+    Next i
+End Sub</pre></div>
+        </article>
+
+        <article class="card" data-cat="excel" data-title="Find And Replace" data-desc="Find and replace values across sheet">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta"><h3>Find & Replace</h3><div class="tag ex">Excel</div></div>
+          <p class="desc">Replace occurrences of a value with another value in the worksheet.</p>
+          <div class="code-wrap"><pre>Sub FindAndReplace()
+    Dim ws As Worksheet
+    Set ws = ActiveSheet
+    ws.Cells.Replace What:="oldValue", Replacement:="newValue", LookAt:=xlPart, MatchCase:=False
+End Sub</pre></div>
+        </article>
+
+        <article class="card" data-cat="excel" data-title="Remove Double Spaces" data-desc="Replace double spaces with single spaces">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta"><h3>Remove Double Spaces</h3><div class="tag ex">Excel</div></div>
+          <p class="desc">Removes repeated double spaces across used range cells.</p>
+          <div class="code-wrap"><pre>Sub RemoveDoubleSpaces()
+    Dim c As Range
+    For Each c In ActiveSheet.UsedRange
+        If Len(c.Value & "") > 0 And Not IsNumeric(c.Value) Then
+            Do While InStr(c.Value, "  ") > 0
+                c.Value = Replace(c.Value, "  ", " ")
+            Loop
+        End If
+    Next c
+End Sub</pre></div>
+        </article>
+
+        <article class="card" data-cat="excel" data-title="Convert Date Format" data-desc="Set date format for column B to dd/mm/yyyy">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta"><h3>Convert Date Format</h3><div class="tag ex">Excel</div></div>
+          <p class="desc">Change number format of column B to dd/mm/yyyy.</p>
+          <div class="code-wrap"><pre>Sub ConvertDateFormat()
+    On Error Resume Next
+    Columns("B").NumberFormat = "dd/mm/yyyy"
+    On Error GoTo 0
+End Sub</pre></div>
+        </article>
+
+        <article class="card" data-cat="excel" data-title="Remove Blank Rows Faster" data-desc="Use AutoFilter to delete blank rows">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta"><h3>Remove Blank Rows (AutoFilter)</h3><div class="tag ex">Excel</div></div>
+          <p class="desc">Faster method to remove entire blank rows using AutoFilter.</p>
+          <div class="code-wrap"><pre>Sub DeleteBlankRows_AutoFilter()
+    Dim ws As Worksheet
+    Set ws = ActiveSheet
+    With ws.UsedRange
+        .AutoFilter Field:=1, Criteria1:="="
+        On Error Resume Next
+        ws.Range("A2:A" & ws.Rows.Count).SpecialCells(xlCellTypeVisible).EntireRow.Delete
+        On Error GoTo 0
+        ws.AutoFilterMode = False
+    End With
+End Sub</pre></div>
+        </article>
+
+        <article class="card" data-cat="excel" data-title="Remove Duplicates" data-desc="Remove duplicate rows based on columns A:C">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta"><h3>Remove Duplicates</h3><div class="tag ex">Excel</div></div>
+          <p class="desc">Removes duplicates based on specific columns (A to C).</p>
+          <div class="code-wrap"><pre>Sub RemoveDuplicates_A()
+    Dim ws As Worksheet
+    Set ws = ActiveSheet
+    ws.Range("A1").CurrentRegion.RemoveDuplicates Columns:=Array(1,2,3), Header:=xlYes
+End Sub</pre></div>
+        </article>
+
+        <article class="card" data-cat="excel" data-title="Sort By Column A" data-desc="Sort current region by column A ascending">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta"><h3>Sort By Column A</h3><div class="tag ex">Excel</div></div>
+          <p class="desc">Sorts the current region based on column A in ascending order.</p>
+          <div class="code-wrap"><pre>Sub SortByColumnA()
+    Dim rng As Range
+    Set rng = Range("A1").CurrentRegion
+    rng.Sort Key1:=rng.Columns(1), Order1:=xlAscending, Header:=xlYes
+End Sub</pre></div>
+        </article>
+
+        <article class="card" data-cat="excel" data-title="Export Sheet To CSV" data-desc="Save active sheet as CSV file">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta"><h3>Export Sheet to CSV</h3><div class="tag ex">Excel</div></div>
+          <p class="desc">Save the active sheet as CSV to a specified path.</p>
+          <div class="code-wrap"><pre>Sub SaveSheetAsCSV()
+    Dim ws As Worksheet, csvPath As String
+    Set ws = ActiveSheet
+    csvPath = ThisWorkbook.Path & "\" & ws.Name & ".csv"
+    Application.DisplayAlerts = False
+    ws.Copy
+    ActiveWorkbook.SaveAs Filename:=csvPath, FileFormat:=xlCSV
+    ActiveWorkbook.Close SaveChanges:=False
+    Application.DisplayAlerts = True
+End Sub</pre></div>
+        </article>
+
+        <!-- ===== WORD (5) ===== -->
+        <article class="card" data-cat="word" data-title="Insert Header Text" data-desc="Add header to first section">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta"><h3>Insert Header</h3><div class="tag wd">Word</div></div>
+          <p class="desc">Insert text into the primary header of the first section.</p>
+          <div class="code-wrap"><pre>Sub Word_InsertHeader()
+    Dim s As Section
+    Set s = ActiveDocument.Sections(1)
+    s.Headers(wdHeaderFooterPrimary).Range.Text = "My Document Header"
+End Sub</pre></div>
+        </article>
+
+        <article class="card" data-cat="word" data-title="Insert Footer With Page Numbers" data-desc="Add footer text and page number field">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta"><h3>Insert Footer (Page #)</h3><div class="tag wd">Word</div></div>
+          <p class="desc">Adds footer text and inserts page numbers.</p>
+          <div class="code-wrap"><pre>Sub Word_InsertFooter()
+    With ActiveDocument.Sections(1).Footers(wdHeaderFooterPrimary).Range
+        .Text = "Confidential - Page "
+        .Fields.Add Range:=.Characters.Last, Type:=wdFieldPage
+    End With
+End Sub</pre></div>
+        </article>
+
+        <article class="card" data-cat="word" data-title="Find and Replace Word" data-desc="Replace text throughout the document">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta"><h3>Find & Replace (Word)</h3><div class="tag wd">Word</div></div>
+          <p class="desc">Find and replace text across the active document (case-insensitive).</p>
+          <div class="code-wrap"><pre>Sub Word_FindReplace()
+    With ActiveDocument.Content.Find
+        .ClearFormatting
+        .Replacement.ClearFormatting
+        .Text = "oldText"
+        .Replacement.Text = "newText"
+        .Forward = True
+        .Wrap = wdFindContinue
+        .Format = False
+        .MatchCase = False
+        .MatchWholeWord = False
+        .Execute Replace:=wdReplaceAll
+    End With
+End Sub</pre></div>
+        </article>
+
+        <article class="card" data-cat="word" data-title="Remove Headers And Footers" data-desc="Delete headers and footers in all sections">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta"><h3>Remove Headers/Footers</h3><div class="tag wd">Word</div></div>
+          <p class="desc">Remove header and footer contents across every section.</p>
+          <div class="code-wrap"><pre>Sub Word_RemoveHeadersFooters()
+    Dim s As Section
+    For Each s In ActiveDocument.Sections
+        s.Headers(wdHeaderFooterPrimary).Range.Delete
+        s.Footers(wdHeaderFooterPrimary).Range.Delete
+    Next s
+End Sub</pre></div>
+        </article>
+
+        <article class="card" data-cat="word" data-title="Check Spelling And Grammar" data-desc="Run spell check on document">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta"><h3>Grammar & Spell Check</h3><div class="tag wd">Word</div></div>
+          <p class="desc">Launch Word's built-in spell and grammar checker.</p>
+          <div class="code-wrap"><pre>Sub Word_CheckSpellingGrammar()
+    If ActiveDocument.SpellingErrors.Count > 0 Then ActiveDocument.CheckSpelling
+    If ActiveDocument.GrammaticalErrors.Count > 0 Then ActiveDocument.CheckGrammar
+End Sub</pre></div>
+        </article>
+
+        <!-- ===== POWERPOINT (5) ===== -->
+        <article class="card" data-cat="ppt" data-title="Add New Slide" data-desc="Add a slide to end of presentation">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta"><h3>Add New Slide</h3><div class="tag pp">PowerPoint</div></div>
+          <p class="desc">Adds a new blank slide to the end of the active presentation.</p>
+          <div class="code-wrap"><pre>Sub PPT_AddSlide()
+    Dim s As Slide
+    Set s = ActivePresentation.Slides.Add(Index:=ActivePresentation.Slides.Count + 1, Layout:=ppLayoutBlank)
+End Sub</pre></div>
+        </article>
+
+        <article class="card" data-cat="ppt" data-title="Insert Image To Slide" data-desc="Insert picture to the first slide">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta"><h3>Insert Image</h3><div class="tag pp">PowerPoint</div></div>
+          <p class="desc">Adds an image file to slide 1 at specified position and size.</p>
+          <div class="code-wrap"><pre>Sub PPT_InsertImage()
+    ActivePresentation.Slides(1).Shapes.AddPicture FileName:="C:\Path\Image.jpg", LinkToFile:=msoFalse, SaveWithDocument:=msoTrue, Left:=100, Top:=100, Width:=300, Height:=200
+End Sub</pre></div>
+        </article>
+
+        <article class="card" data-cat="ppt" data-title="Loop Through Slides" data-desc="Loop and show SlideIndex">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta"><h3>Loop Slides</h3><div class="tag pp">PowerPoint</div></div>
+          <p class="desc">Loop through slides and do an action per slide.</p>
+          <div class="code-wrap"><pre>Sub PPT_LoopSlides()
+    Dim s As Slide
+    For Each s In ActivePresentation.Slides
+        ' Example action:
+        Debug.Print "Slide: " & s.SlideIndex
+    Next s
+End Sub</pre></div>
+        </article>
+
+        <article class="card" data-cat="ppt" data-title="Change Slide Layout" data-desc="Set slide layout to Title and Content">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta"><h3>Change Slide Layout</h3><div class="tag pp">PowerPoint</div></div>
+          <p class="desc">Change the layout of the provided slide index (e.g., slide 1).</p>
+          <div class="code-wrap"><pre>Sub PPT_ChangeLayout()
+    ActivePresentation.Slides(1).Layout = ppLayoutText
+End Sub</pre></div>
+        </article>
+
+        <article class="card" data-cat="ppt" data-title="Start Slide Show" data-desc="Begin presentation slideshow">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta"><h3>Start SlideShow</h3><div class="tag pp">PowerPoint</div></div>
+          <p class="desc">Start the slide show from the beginning.</p>
+          <div class="code-wrap"><pre>Sub PPT_StartSlideShow()
+    ActivePresentation.SlideShowSettings.Run
+End Sub</pre></div>
+        </article>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    // App state
+    const cardsEl = document.getElementById('cards');
+    const allCards = Array.from(document.querySelectorAll('.card'));
+    const navBtns = document.querySelectorAll('.nav-btn');
+    const globalSearch = document.getElementById('globalSearch');
+    const sidebarSearch = document.getElementById('sidebarSearch');
+    const resultCount = document.getElementById('resultCount');
+    const showing = document.getElementById('showing');
+
+    // Theme toggle
+    const themeToggle = document.getElementById('themeToggle');
+    const appEl = document.getElementById('app');
+    let isLight = false;
+    function setTheme(light){
+      if(light){
+        document.documentElement.classList.remove('light');
+        isLight = true;
+      } else {
+        document.documentElement.classList.remove('light');
+        isLight = false;
+      }
+    }
+    // initialize theme from localStorage
+    if(localStorage.getItem('vb_theme') === 'light'){ setTheme(true) } else { setTheme(false) }
+    themeToggle.addEventListener('click', () => {
+      setTheme(!isLight);
+      localStorage.setItem('vb_theme', isLight ? 'dark' : 'light');
+    });
+
+    // Copy snippet
+    function copySnippet(btn){
+      const card = btn.closest('.card');
+      const pre = card.querySelector('pre');
+      const txt = pre.textContent;
+      navigator.clipboard.writeText(txt).then(() => {
+        btn.classList.add('copied');
+        btn.textContent = 'Copied';
+        setTimeout(() => { btn.classList.remove('copied'); btn.textContent = 'Copy'; }, 1200);
+      }).catch(()=> {
+        alert('Copy failed — select and copy manually.');
+      });
+    }
+
+    // Filter by category (sidebar)
+    navBtns.forEach(nb => {
+      nb.addEventListener('click', () => {
+        navBtns.forEach(n=>n.classList.remove('active'));
+        nb.classList.add('active');
+        const filter = nb.dataset.filter;
+        applyFilters();
+      });
+    });
+
+    // Search handlers
+    function applyFilters(){
+      const activeFilterBtn = document.querySelector('.nav-btn.active');
+      const filterCat = activeFilterBtn ? activeFilterBtn.dataset.filter : 'all';
+      const q = (globalSearch.value || sidebarSearch.value || '').trim().toLowerCase();
+
+      let visible = 0;
+      allCards.forEach(card => {
+        const cat = card.dataset.cat || '';
+        const title = (card.dataset.title || '').toLowerCase();
+        const desc = (card.dataset.desc || '').toLowerCase();
+        const code = card.querySelector('pre').textContent.toLowerCase();
+
+        // category match
+        const catMatch = (filterCat === 'all') || (filterCat === cat);
+        // search match (title OR desc OR code)
+        const qMatch = q === '' || title.includes(q) || desc.includes(q) || code.includes(q);
+
+        if(catMatch && qMatch){
+          card.classList.remove('hidden');
+          card.style.display = '';
+          visible++;
+        } else {
+          card.classList.add('hidden');
+          card.style.display = 'none';
+        }
+      });
+
+      resultCount.textContent = visible + ' snippets';
+      showing.textContent = visible;
+    }
+
+    globalSearch.addEventListener('input', applyFilters);
+    sidebarSearch.addEventListener('input', (e)=>{
+      globalSearch.value = e.target.value;
+      applyFilters();
+    });
+
+    // init showing
+    resultCount.textContent = allCards.length + ' snippets';
+    showing.textContent = allCards.length;
+
+    // keyboard: / to focus search
+    window.addEventListener('keydown', (e) => {
+      if(e.key === '/') {
+        e.preventDefault();
+        globalSearch.focus();
+      }
+    });
+
+    // Accessibility: allow copying with Ctrl+C when focused on a card (optional)
+    document.addEventListener('keydown', (e) => {
+      if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c'){
+        const active = document.activeElement;
+        if(active && active.closest && active.closest('.card')){
+          const btn = active.closest('.card').querySelector('.copy');
+          if(btn) copySnippet(btn);
+        }
+      }
+    });
+
+  </script>
+</body>
+</html>
