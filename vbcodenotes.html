@@ -226,13 +226,33 @@ End Sub</pre></div>
           <div class="meta"><h3>Delete Empty Rows</h3><div class="tag ex">Excel</div></div>
           <p class="desc">Deletes rows where both column A and B are empty (safe reverse loop).</p>
           <div class="code-wrap"><pre>Sub DeleteEmptyRows()
-    Dim ws As Worksheet, i As Long
+    Sub DeleteEmptyRows_Fast()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    
     Set ws = ActiveSheet
-    For i = ws.Rows.Count To 1 Step -1
-        If Trim(ws.Cells(i, 1).Value) = "" And Trim(ws.Cells(i, 2).Value) = "" Then
-            ws.Rows(i).Delete
-        End If
-    Next i
+    
+    ' Find last used row across A & B
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    If ws.Cells(ws.Rows.Count, "B").End(xlUp).Row > lastRow Then
+        lastRow = ws.Cells(ws.Rows.Count, "B").End(xlUp).Row
+    End If
+    
+    ' Apply AutoFilter on both A & B
+    With ws.Range("A1:B" & lastRow)
+        .AutoFilter Field:=1, Criteria1:="="
+        .AutoFilter Field:=2, Criteria1:="="
+        
+        ' Delete visible rows (excluding header)
+        On Error Resume Next
+        .Offset(1).SpecialCells(xlCellTypeVisible).EntireRow.Delete
+        On Error GoTo 0
+        
+        ' Clear filter
+        .AutoFilter
+    End With
+End Sub
+
 End Sub</pre></div>
         </article>
 
