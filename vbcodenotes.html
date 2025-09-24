@@ -273,7 +273,6 @@
       /* optional: hides overflowing content */
     }
 
-    }
 
     .card:hover {
       transform: translateY(-6px);
@@ -432,6 +431,7 @@
         <button class="nav-btn" data-filter="excel"><span class="dot ex"></span> Excel</button>
         <button class="nav-btn" data-filter="word"><span class="dot wd"></span> Word</button>
         <button class="nav-btn" data-filter="ppt"><span class="dot pp"></span> PowerPoint</button>
+        <button class="nav-btn" data-filter="required"><span class="dot pp"></span> Required</button>
       </div>
 
       <div class="search-mini">
@@ -492,36 +492,369 @@ End Sub</pre>
           <p class="desc">Deletes rows where both column A and B are empty (safe reverse loop).</p>
           <div class="code-wrap">
             <pre>Sub DeleteEmptyRows()
-    Sub DeleteEmptyRows_Fast()
-    Dim ws As Worksheet
-    Dim lastRow As Long
-    
-    Set ws = ActiveSheet
-    
-    ' Find last used row across A & B
-    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
-    If ws.Cells(ws.Rows.Count, "B").End(xlUp).Row > lastRow Then
-        lastRow = ws.Cells(ws.Rows.Count, "B").End(xlUp).Row
-    End If
-    
-    ' Apply AutoFilter on both A & B
-    With ws.Range("A1:B" & lastRow)
-        .AutoFilter Field:=1, Criteria1:="="
-        .AutoFilter Field:=2, Criteria1:="="
-        
-        ' Delete visible rows (excluding header)
-        On Error Resume Next
-        .Offset(1).SpecialCells(xlCellTypeVisible).EntireRow.Delete
-        On Error GoTo 0
-        
-        ' Clear filter
-        .AutoFilter
-    End With
-End Sub
+          Sub DeleteEmptyRows_Fast()
+          Dim ws As Worksheet
+          Dim lastRow As Long
+          
+          Set ws = ActiveSheet
+          
+          ' Find last used row across A & B
+          lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+          If ws.Cells(ws.Rows.Count, "B").End(xlUp).Row > lastRow Then
+              lastRow = ws.Cells(ws.Rows.Count, "B").End(xlUp).Row
+          End If
+          
+          ' Apply AutoFilter on both A & B
+          With ws.Range("A1:B" & lastRow)
+              .AutoFilter Field:=1, Criteria1:="="
+              .AutoFilter Field:=2, Criteria1:="="
+              
+              ' Delete visible rows (excluding header)
+              On Error Resume Next
+              .Offset(1).SpecialCells(xlCellTypeVisible).EntireRow.Delete
+              On Error GoTo 0
+              
+              ' Clear filter
+              .AutoFilter
+          End With
+      End Sub
 
 End Sub</pre>
           </div>
         </article>
+
+        <article class="card" data-cat="required" data-title="Delete Empty Rows"
+          data-desc="Delete rows where columns A and B are empty">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta">
+            <h3>Supramax ffa</h3>
+            <div class="tag ex">Excel</div>
+          </div>
+          <p class="desc">After downloading the data we can use this code</p>
+          <div class="code-wrap">
+            <pre> 
+    Sub TransformData_AllDates_DescBeforeValue()
+    Dim wsSrc As Worksheet, wsDest As Worksheet
+    Dim lastRow As Long, destRow As Long
+    Dim dict As Object
+    Dim i As Long, col As Long
+    ' Source sheet (raw data format)
+    Set wsSrc = ThisWorkbook.Sheets("Sheet1") ' <-- change if needed
+    ' Create/clear destination sheet
+    On Error Resume Next
+    Set wsDest = ThisWorkbook.Sheets("Transformed")
+    If wsDest Is Nothing Then
+        Set wsDest = ThisWorkbook.Sheets.Add
+        wsDest.Name = "Transformed"
+    Else
+        wsDest.Cells.Clear
+    End If
+    On Error GoTo 0
+    ' Find last row of source
+    lastRow = wsSrc.Cells(wsSrc.Rows.Count, "A").End(xlUp).Row
+    ' Dictionary to track RouteIdentifiers (columns)
+    Set dict = CreateObject("Scripting.Dictionary")
+    ' Write headers
+    wsDest.Cells(1, 1).Value = "GroupDesc"
+    wsDest.Cells(1, 2).Value = "ArchiveDate"
+    ' Loop through source data
+    destRow = 2
+    For i = 2 To lastRow
+        Dim groupDesc As String, archiveDate As Variant
+        Dim routeID As String, routeAvg As Variant, ffaDesc As Variant
+        Dim foundRow As Long
+        groupDesc = wsSrc.Cells(i, 1).Value
+        archiveDate = wsSrc.Cells(i, 2).Value
+        routeID = wsSrc.Cells(i, 3).Value
+        routeAvg = wsSrc.Cells(i, 4).Value
+        ffaDesc = wsSrc.Cells(i, 5).Value  ' ✅ assumes FFADescription is in column E
+        ' ✅ Keep only RouteIdentifiers containing "10TC"
+        If InStr(1, routeID, "10TC", vbTextCompare) = 0 Then GoTo NextRow
+        ' ✅ Format FFADescription to "MMM YYYY"
+        If IsDate(ffaDesc) Then
+            ffaDesc = Format(CDate(ffaDesc), "MMM YYYY")
+        End If
+        ' ✅ Find if GroupDesc + ArchiveDate row already exists
+        foundRow = 0
+        Dim j As Long
+        For j = 2 To destRow - 1
+            If wsDest.Cells(j, 1).Value = groupDesc And wsDest.Cells(j, 2).Value = archiveDate Then
+                foundRow = j
+                Exit For
+            End If
+        Next j
+        ' If not found, create new row
+        If foundRow = 0 Then
+            foundRow = destRow
+            wsDest.Cells(foundRow, 1).Value = groupDesc
+            wsDest.Cells(foundRow, 2).Value = archiveDate
+            destRow = destRow + 1
+        End If
+        ' ✅ Ensure columns for RouteIdentifier exist
+        If Not dict.exists(routeID) Then
+            col = wsDest.Cells(1, wsDest.Columns.Count).End(xlToLeft).Column + 2 ' leave gap
+            wsDest.Cells(1, col).Value = "Desc_" & routeID
+            wsDest.Cells(1, col + 1).Value = routeID
+            dict(routeID) = col
+        Else
+            col = dict(routeID)
+        End If
+        ' ✅ Place values (desc first, then value)
+        wsDest.Cells(foundRow, col).Value = ffaDesc
+        wsDest.Cells(foundRow, col + 1).Value = routeAvg
+NextRow:
+    Next i
+    MsgBox "Transformation complete! Desc placed before 10TC values.", vbInformation
+End Sub
+</pre>
+</div>
+</article>
+        <article class="card" data-cat="required" data-title="Delete Empty Rows"
+          data-desc="Delete rows where columns A and B are empty">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta">
+            <h3>Daily data</h3>
+            <div class="tag ex">Excel</div>
+          </div>
+          <p class="desc">After downloading the data we can use this code</p>
+          <div class="code-wrap">
+
+            <pre>
+
+              Sub WideToLong_Convert_Filtered()
+              Sub WideToLong_Convert_Filtered()
+              Dim wsSrc As Worksheet
+              Dim wsDest As Worksheet
+              Dim lastRow As Long, lastCol As Long
+              Dim iRow As Long, iCol As Long
+              Dim destRow As Long
+              Dim dateVal As Variant
+              Dim colName As String
+              Dim cellVal As Variant
+              Dim keepCols As Variant
+
+            ' List of columns to keep
+            keepCols = Array("C10", "C14", "C16", "C17", "C5TC", _
+                            "P1A_82", "P2A_82", "P3A_82", "P4_82", "P5_82", "P6_82", "P7", "P8", "P5TC", _
+                            "S1B", "S1C", "S2", "S3", "S4A", "S4B", "S5", "S8", "S9", "S10", "S10TC", _
+                            "HS1_38", "HS2_38", "HS3_38", "HS4_38", "HS5_38", "HS6_38", "HS7_38", "HS7TC")
+
+            ' Set reference to source worksheet
+            Set wsSrc = ThisWorkbook.Sheets("Sheet1")
+            
+            ' Create / Clear destination worksheet
+            On Error Resume Next
+            Set wsDest = ThisWorkbook.Sheets("LongFormat")
+            On Error GoTo 0
+            
+            If wsDest Is Nothing Then
+                Set wsDest = ThisWorkbook.Sheets.Add(After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count))
+                wsDest.Name = "LongFormat"
+            Else
+                wsDest.Cells.Clear
+            End If
+
+            ' Find last row and column
+            lastRow = wsSrc.Cells(wsSrc.Rows.Count, 1).End(xlUp).Row
+            lastCol = wsSrc.Cells(1, wsSrc.Columns.Count).End(xlToLeft).Column
+
+            ' Headers
+            wsDest.Cells(1, 1).Value = "Date"
+            wsDest.Cells(1, 2).Value = "ColumnName"
+            wsDest.Cells(1, 3).Value = "Value"
+            destRow = 2
+
+            ' Loop through rows
+            For iRow = 2 To lastRow
+                dateVal = wsSrc.Cells(iRow, 1).Value
+                ' Loop through columns
+                For iCol = 2 To lastCol
+                    colName = wsSrc.Cells(1, iCol).Value
+                    If Not IsError(Application.Match(colName, keepCols, 0)) Then
+                        cellVal = wsSrc.Cells(iRow, iCol).Value
+                        wsDest.Cells(destRow, 1).Value = dateVal
+                        wsDest.Cells(destRow, 2).Value = colName
+                        wsDest.Cells(destRow, 3).Value = cellVal
+                        destRow = destRow + 1
+                    End If
+                Next iCol
+            Next iRow
+
+            MsgBox "Filtered conversion complete! " & destRow - 2 & " rows created."
+        End Sub
+            </pre>
+          </div>
+        </article>
+<article class="card" data-cat="required" data-title="Delete Empty Rows"
+          data-desc="Delete rows where columns A and B are empty">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta">
+            <h3>Capesize ffa</h3>
+            <div class="tag ex">Excel</div>
+          </div>
+          <p class="desc">After downloading the data we can use this code</p>
+          <div class="code-wrap">
+
+            <pre>
+
+            Sub TransformData()
+            Dim wsSrc As Worksheet, wsDest As Worksheet
+            Dim lastRow As Long, destRow As Long
+            Dim dict As Object
+            Dim i As Long, col As Long
+            Dim key As String
+            ' Source sheet (raw data format)
+            Set wsSrc = ThisWorkbook.Sheets("Sheet1") ' <-- change to your sheet name
+            ' Create/clear destination sheet
+            On Error Resume Next
+            Set wsDest = ThisWorkbook.Sheets("Transformed")
+            If wsDest Is Nothing Then
+                Set wsDest = ThisWorkbook.Sheets.Add
+                wsDest.Name = "Transformed"
+            Else
+                wsDest.Cells.Clear
+            End If
+            On Error GoTo 0
+            ' Find last row of source
+            lastRow = wsSrc.Cells(wsSrc.Rows.Count, "A").End(xlUp).Row
+            ' Dictionary to track RouteIdentifiers (columns)
+            Set dict = CreateObject("Scripting.Dictionary")
+            ' Write headers
+            wsDest.Cells(1, 1).Value = "GroupDesc"
+            wsDest.Cells(1, 2).Value = "ArchiveDate"
+            ' Loop through source data
+            destRow = 2
+            For i = 2 To lastRow
+                Dim groupDesc As String, archiveDate As String
+                Dim routeID As String, routeAvg As Variant
+                groupDesc = wsSrc.Cells(i, 1).Value
+                archiveDate = wsSrc.Cells(i, 2).Value
+                routeID = wsSrc.Cells(i, 3).Value
+                routeAvg = wsSrc.Cells(i, 4).Value
+                ' Create a key for GroupDesc + ArchiveDate
+                key = groupDesc & "|" & archiveDate
+                ' Find row in destination
+                Dim destFind As Range
+                Set destFind = wsDest.Columns(1).Find(What:=groupDesc, After:=wsDest.Cells(1, 1), LookAt:=xlWhole)
+                Dim foundRow As Long
+                foundRow = 0
+                If Not destFind Is Nothing Then
+                    ' check ArchiveDate also
+                    Do
+                        If wsDest.Cells(destFind.Row, 2).Value = archiveDate Then
+                            foundRow = destFind.Row
+                            Exit Do
+                        End If
+                        Set destFind = wsDest.Columns(1).FindNext(destFind)
+                    Loop While Not destFind Is Nothing And destFind.Row <> wsDest.Columns(1).Find(What:=groupDesc, After:=wsDest.Cells(1, 1), LookAt:=xlWhole).Row
+                End If
+                If foundRow = 0 Then
+                    foundRow = destRow
+                    wsDest.Cells(foundRow, 1).Value = groupDesc
+                    wsDest.Cells(foundRow, 2).Value = archiveDate
+                    destRow = destRow + 1
+                End If
+                ' Ensure column for RouteIdentifier exists
+                If Not dict.exists(routeID) Then
+                    col = wsDest.Cells(1, wsDest.Columns.Count).End(xlToLeft).Column + 1
+                    wsDest.Cells(1, col).Value = routeID
+                    dict(routeID) = col
+                Else
+                    col = dict(routeID)
+                End If
+                ' Place value
+                wsDest.Cells(foundRow, col).Value = routeAvg
+            Next i
+            MsgBox "Transformation complete!", vbInformation
+        End Sub
+            </pre>
+          </div>
+        </article>
+
+ <article class="card" data-cat="excel" data-title="Delete Empty Rows"
+          data-desc="Delete rows where columns A and B are empty">
+          <button class="copy" onclick="copySnippet(this)">Copy</button>
+          <div class="meta">
+            <h3>Delete Empty rows</h3>
+            <div class="tag ex">Excel</div>
+          </div>
+          <p class="desc">After downloading the data we can use this code</p>
+          <div class="code-wrap">
+            <pre> 
+      Sub TransformData()
+      Dim wsSrc As Worksheet, wsDest As Worksheet
+      Dim lastRow As Long, destRow As Long
+      Dim dict As Object
+      Dim i As Long, col As Long
+      Dim key As String
+      ' Source sheet (raw data format)
+      Set wsSrc = ThisWorkbook.Sheets("Sheet1") ' <-- change to your sheet name
+      ' Create/clear destination sheet
+      On Error Resume Next
+      Set wsDest = ThisWorkbook.Sheets("Transformed")
+      If wsDest Is Nothing Then
+          Set wsDest = ThisWorkbook.Sheets.Add
+          wsDest.Name = "Transformed"
+      Else
+          wsDest.Cells.Clear
+      End If
+      On Error GoTo 0
+      ' Find last row of source
+      lastRow = wsSrc.Cells(wsSrc.Rows.Count, "A").End(xlUp).Row
+      ' Dictionary to track RouteIdentifiers (columns)
+      Set dict = CreateObject("Scripting.Dictionary")
+      ' Write headers
+      wsDest.Cells(1, 1).Value = "GroupDesc"
+      wsDest.Cells(1, 2).Value = "ArchiveDate"
+      ' Loop through source data
+      destRow = 2
+      For i = 2 To lastRow
+          Dim groupDesc As String, archiveDate As String
+          Dim routeID As String, routeAvg As Variant
+          groupDesc = wsSrc.Cells(i, 1).Value
+          archiveDate = wsSrc.Cells(i, 2).Value
+          routeID = wsSrc.Cells(i, 3).Value
+          routeAvg = wsSrc.Cells(i, 4).Value
+          ' Create a key for GroupDesc + ArchiveDate
+          key = groupDesc & "|" & archiveDate
+          ' Find row in destination
+          Dim destFind As Range
+          Set destFind = wsDest.Columns(1).Find(What:=groupDesc, After:=wsDest.Cells(1, 1), LookAt:=xlWhole)
+          Dim foundRow As Long
+          foundRow = 0
+          If Not destFind Is Nothing Then
+              ' check ArchiveDate also
+              Do
+                  If wsDest.Cells(destFind.Row, 2).Value = archiveDate Then
+                      foundRow = destFind.Row
+                      Exit Do
+                  End If
+                  Set destFind = wsDest.Columns(1).FindNext(destFind)
+              Loop While Not destFind Is Nothing And destFind.Row <> wsDest.Columns(1).Find(What:=groupDesc, After:=wsDest.Cells(1, 1), LookAt:=xlWhole).Row
+          End If
+          If foundRow = 0 Then
+              foundRow = destRow
+              wsDest.Cells(foundRow, 1).Value = groupDesc
+              wsDest.Cells(foundRow, 2).Value = archiveDate
+              destRow = destRow + 1
+          End If
+          ' Ensure column for RouteIdentifier exists
+          If Not dict.exists(routeID) Then
+              col = wsDest.Cells(1, wsDest.Columns.Count).End(xlToLeft).Column + 1
+              wsDest.Cells(1, col).Value = routeID
+              dict(routeID) = col
+          Else
+              col = dict(routeID)
+          End If
+          ' Place value
+          wsDest.Cells(foundRow, col).Value = routeAvg
+      Next i
+      MsgBox "Transformation complete!", vbInformation
+  End Sub
+</pre>
+          </div>
+        </article>
+
 
         <article class="card" data-cat="excel" data-title="Delete Empty Rows"
           data-desc="Delete rows where columns A and B are empty">
@@ -581,10 +914,6 @@ End Sub</pre>
           </div>
         </article>
 
-
-
-
-
         <article class="card" data-cat="excel" data-title="Find And Replace"
           data-desc="Find and replace values across sheet">
           <button class="copy" onclick="copySnippet(this)">Copy</button>
@@ -598,7 +927,7 @@ End Sub</pre>
     Dim ws As Worksheet
     Set ws = ActiveSheet
     ws.Cells.Replace What:="oldValue", Replacement:="newValue", LookAt:=xlPart, MatchCase:=False
-End Sub</pre>
+  End Sub</pre>
           </div>
         </article>
 
